@@ -1,0 +1,62 @@
+version: '3.8'
+services:
+  sensor1:
+    image: abelfodil/sensor:0.0.1
+    network_mode: "host"
+    environment:
+      - SERVER_URL=http://localhost:8080/receive
+      - SCENARIO_ID=1
+  sensor2:
+    image: abelfodil/sensor:0.0.1
+    network_mode: "host"
+    environment:
+      - SERVER_URL=http://localhost:8080/receive
+      - SCENARIO_ID=2
+  sensor3:
+    image: abelfodil/sensor:0.0.1
+    network_mode: "host"
+    environment:
+      - SERVER_URL=http://localhost:8080/receive
+      - SCENARIO_ID=3
+  sensor4:
+    image: abelfodil/sensor:0.0.1
+    network_mode: "host"
+    environment:
+      - SERVER_URL=http://localhost:8080/receive
+      - SCENARIO_ID=4
+  sensor5:
+    image: abelfodil/sensor:0.0.1
+    network_mode: "host"
+    environment:
+      - SERVER_URL=http://localhost:8080/receive
+      - SCENARIO_ID=5
+  sensor6:
+    image: abelfodil/sensor:0.0.1
+    network_mode: "host"
+    environment:
+      - SERVER_URL=http://localhost:8080/receive
+      - SCENARIO_ID=6
+  sensor7:
+    image: abelfodil/sensor:0.0.1
+    network_mode: "host"
+    environment:
+      - SERVER_URL=http://localhost:8080/receive
+      - SCENARIO_ID=7
+  sensor8:
+    image: abelfodil/sensor:0.0.1
+    network_mode: "host"
+    environment:
+      - SERVER_URL=http://localhost:8080/receive
+      - SCENARIO_ID=8
+  sensorCustom:
+    image: abelfodil/sensor:0.0.1
+    network_mode: "host"
+    environment:
+      - SERVER_URL=http://localhost:8080/receive
+      - PLANT_ID=12
+      - SENSOR_ID=88712531
+      - SENSOR_VERSION=FR-v7
+      - PERIOD=2s
+      - MEASURES=temperature:285.15°K,temperature:286.15°K,humidity:12%
+
+    
