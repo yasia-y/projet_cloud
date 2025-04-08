@@ -1,2 +1,2 @@
-# projet_cloud
-a one/two week project cloud for school
+# Main documentation file for the project.
+# Include project summary, team names, features, how to run the project locally or with Docker/Kubernetes, and test instructions.

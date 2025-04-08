@@ -1,0 +1,3 @@
+-- SQL script to initialize the PostgreSQL database.
+-- Should define the sensor_data table with appropriate columns (e.g., id, timestamp, sensor_id, value, alert).
+-- Include types, constraints, and indexes if needed.

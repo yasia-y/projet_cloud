@@ -1,0 +1,2 @@
+# Python dependencies for the Streamlit dashboard.
+# Typical: streamlit, pandas, requests, matplotlib or plotly.

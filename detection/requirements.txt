@@ -1,0 +1,2 @@
+# List all dependencies needed for the detection module.
+# May include pandas, numpy, scipy, or custom ML libraries.
