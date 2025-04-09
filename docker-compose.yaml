@@ -1,2 +1,93 @@
-# Compose file to orchestrate all services locally (API, DB, detection, dashboard).
-# Each service should have its own container, with proper volume and port configuration.
+version: '3.8'
+
+services:
+  ingestion-api:
+    build:
+      context: ./ingestion-api
+    container_name: ingestion-api
+    ports:
+      - "8080:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/ferme
+    depends_on:
+      - db
+    networks:
+      - ferme-network
+
+  db:
+    image: postgres:13
+    container_name: postgres-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ferme
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - ferme-network
+
+  sensor1:
+    image: abelfodil/sensor:0.0.1
+    environment:
+      - SERVER_URL=http://host.docker.internal:8080/ingest
+      - SCENARIO_ID=1
+    network_mode: "host"
+
+  sensor2:
+    image: abelfodil/sensor:0.0.1
+    environment:
+      - SERVER_URL=http://host.docker.internal:8080/ingest
+      - SCENARIO_ID=2
+    network_mode: "host"
+
+  sensor3:
+    image: abelfodil/sensor:0.0.1
+    environment:
+      - SERVER_URL=http://host.docker.internal:8080/ingest
+      - SCENARIO_ID=3
+    network_mode: "host"
+
+  sensor4:
+    image: abelfodil/sensor:0.0.1
+    environment:
+      - SERVER_URL=http://host.docker.internal:8080/ingest
+      - SCENARIO_ID=4
+    network_mode: "host"
+
+  sensor5:
+    image: abelfodil/sensor:0.0.1
+    environment:
+      - SERVER_URL=http://host.docker.internal:8080/ingest
+      - SCENARIO_ID=5
+    network_mode: "host"
+
+  sensor6:
+    image: abelfodil/sensor:0.0.1
+    environment:
+      - SERVER_URL=http://host.docker.internal:8080/ingest
+      - SCENARIO_ID=6
+    network_mode: "host"
+
+  sensor7:
+    image: abelfodil/sensor:0.0.1
+    environment:
+      - SERVER_URL=http://host.docker.internal:8080/ingest
+      - SCENARIO_ID=7
+    network_mode: "host"
+
+  sensor8:
+    image: abelfodil/sensor:0.0.1
+    environment:
+      - SERVER_URL=http://host.docker.internal:8080/ingest
+      - SCENARIO_ID=8
+    network_mode: "host"
+
+volumes:
+  pgdata:
+
+networks:
+  ferme-network:
+

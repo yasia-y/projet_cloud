@@ -1,2 +1,6 @@
-# List all Python dependencies for the ingestion API.
-# Common packages: fastapi, uvicorn, msgpack, pydantic, psycopg2, pytest.
+fastapi
+uvicorn
+msgpack
+pydantic
+pytest
+psycopg2-binary

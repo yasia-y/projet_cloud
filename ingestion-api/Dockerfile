@@ -1,2 +1,12 @@
-# This Dockerfile will containerize the ingestion API.
-# It should use a Python base image, install dependencies, and run the FastAPI server with Uvicorn.
+FROM python:3.10-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+EXPOSE 8000
+
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
