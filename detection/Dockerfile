@@ -1,2 +1,6 @@
-# Dockerfile to containerize the anomaly detection module.
-# Should set up Python environment, install packages, and run your detection script or app.
+FROM python:3.9-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY . .
+CMD ["python", "detector.py"]

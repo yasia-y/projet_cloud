@@ -1,2 +1,5 @@
-# Dockerfile to run a PostgreSQL database with the init.sql script.
-# Use official postgres image and copy the SQL file into the container.
+FROM postgres:13
+ENV POSTGRES_DB=ferme_urbaine
+ENV POSTGRES_USER=admin
+ENV POSTGRES_PASSWORD=secret
+COPY init.sql /docker-entrypoint-initdb.d/
