@@ -3,39 +3,41 @@
 import streamlit as st
 import pandas as pd
 import requests
-import time
 
 API_URL = "http://localhost:8000/api/orders"
 
-st.set_page_config("Dashboard Capteurs", layout="wide")
+st.set_page_config(page_title="Dashboard Capteurs", layout="wide")
 st.title("🧪 Dashboard - Données Capteurs (API Flask)")
 
-# Rafraîchissement automatique
-auto = st.sidebar.checkbox("Rafraîchissement automatique", True)
-delay = st.sidebar.slider("Intervalle (sec)", 2, 30, 5)
+# Suppression de l'option de rafraîchissement automatique
+# auto_refresh = st.sidebar.checkbox("Rafraîchissement automatique", True)
 
-placeholder = st.empty()
-
-
+@st.cache_data(ttl=10)  # Fixe l'intervalle de rafraîchissement à 10 secondes
 def load_data():
-    r = requests.get(API_URL)
-    data = r.json()
-    df = pd.DataFrame(data)
-    return df
+    try:
+        response = requests.get(API_URL)
+        response.raise_for_status()
+        data = response.json()
+        return pd.DataFrame(data)
+    except requests.exceptions.RequestException as e:
+        st.error(f"Erreur lors de la récupération des données : {e}")
+        return pd.DataFrame()
 
 
-while True:
-    with placeholder.container():
-        df = load_data()
-        st.subheader("📊 Données reçues")
+# Affichage des données
+st.subheader("📊 Données reçues")
+data_placeholder = st.empty()
+
+# Rafraîchissement manuel uniquement
+if st.sidebar.button("Rafraîchir maintenant"):
+    df = load_data()
+    if not df.empty:
         st.dataframe(df)
 
         if "timestamp" in df.columns:
             df["timestamp"] = pd.to_datetime(df["timestamp"])
-            for capteur in df["item"].unique():
-                capteur_df = df[df["item"] == capteur]
-                st.line_chart(capteur_df.set_index("timestamp")["quantity"])
-
-    if not auto:
-        break
-    time.sleep(delay)
+            for sensor_type in df["type_donnee"].unique():
+                sensor_data = df[df["type_donnee"] == sensor_type]
+                st.line_chart(sensor_data.set_index("timestamp")["valeur"])
+    else:
+        st.warning("Aucune donnée disponible.")

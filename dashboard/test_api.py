@@ -5,8 +5,10 @@ app = Flask(__name__)
 
 # Données simulées
 capteurs = [
-    {"id": 1, "type_donnée": "Temperature", "valeur": "19", "unite":"°C" "timestamp": "2023-10-01T12:00:00"},
-    {"id": 2, "type_donnée": "Humidite", "valeur": "28", "unite":"%", "timestamp": "2023-10-01T12:00:00"},
+    {"id": 1, "type_donnee": "Temperature", "valeur": "19", "unite": "°C",
+     "timestamp": "2023-10-01T12:00:00"},
+    {"id": 2, "type_donnee": "Humidite", "valeur": "28", "unite": "%",
+     "timestamp": "2023-10-01T12:00:00"},
 ]
 
 
