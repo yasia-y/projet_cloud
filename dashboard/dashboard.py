@@ -9,8 +9,6 @@ API_URL = "http://localhost:8000/api/orders"
 st.set_page_config(page_title="Dashboard Capteurs", layout="wide")
 st.title("🧪 Dashboard - Données Capteurs (API Flask)")
 
-# Suppression de l'option de rafraîchissement automatique
-# auto_refresh = st.sidebar.checkbox("Rafraîchissement automatique", True)
 
 @st.cache_data(ttl=10)  # Fixe l'intervalle de rafraîchissement à 10 secondes
 def load_data():
