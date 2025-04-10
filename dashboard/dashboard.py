@@ -3,23 +3,42 @@
 import streamlit as st
 import pandas as pd
 import requests
+import psycopg2
 
-API_URL = "http://localhost:8000/api/orders"
+# Configuration de la base de données
+DB_HOST = "localhost"  # Utilisez "db" si le dashboard est dans le même réseau Docker
+DB_PORT = 5432
+DB_NAME = "ferme"
+DB_USER = "postgres"
+DB_PASSWORD = "postgres"
 
 st.set_page_config(page_title="Dashboard Capteurs", layout="wide")
 st.title("🧪 Dashboard - Données Capteurs (API Flask)")
 
 
 @st.cache_data(ttl=10)  # Fixe l'intervalle de rafraîchissement à 10 secondes
-def load_data():
+# Fonction pour récupérer les données depuis PostgreSQL
+def load_data_from_db():
     try:
-        response = requests.get(API_URL)
-        response.raise_for_status()
-        data = response.json()
-        return pd.DataFrame(data)
-    except requests.exceptions.RequestException as e:
+        # Connexion à la base de données
+        conn = psycopg2.connect(
+            host=DB_HOST,
+            port=DB_PORT,
+            database=DB_NAME,
+            user=DB_USER,
+            password=DB_PASSWORD
+        )
+        query = "SELECT * FROM sensor_data;"  # Remplacez par votre requête
+        df = pd.read_sql(query, conn)
+        conn.close()
+        return df
+    except Exception as e:
         st.error(f"Erreur lors de la récupération des données : {e}")
         return pd.DataFrame()
+
+
+def load_data():
+    return load_data_from_db()
 
 
 # Affichage des données
