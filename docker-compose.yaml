@@ -4,9 +4,9 @@ services:
   ingestion-api:
     build:
       context: ./ingestion-api
-    container_name: ingestion-api
     environment:
-      - DATABASE_URL=postgresql://admin:secret@db:5432/ferme
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/plant_monitoring
+      - TZ=Europe/Paris
     depends_on:
       db:
         condition: service_healthy
@@ -16,46 +16,54 @@ services:
   db:
     build:
       context: ./database
-    container_name: postgres-db
     environment:
-      - POSTGRES_DB=ferme
-      - POSTGRES_USER=admin
-      - POSTGRES_PASSWORD=secret
-    ports:
-      - "5433:5432"
+      - POSTGRES_DB=plant_monitoring
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d plant_monitoring"]
+      interval: 10s
+      timeout: 10s
+      retries: 15
+      start_period: 40s
     networks:
       - ferme-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U admin"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
 
   sensor1:
     build: ./sensor
-    container_name: sensor1
     environment:
       - SERVER_URL=http://ingestion-api:8000/ingest
       - SENSOR_ID=1
       - PLANT_ID=1
+      - TZ=Europe/Paris
+    depends_on:
+      ingestion-api:
+        condition: service_started
     networks:
       - ferme-network
 
   detection:
     build: ./detection
-    container_name: detection
+    environment:
+      - DB_HOST=db
+      - DB_NAME=plant_monitoring
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - TZ=Europe/Paris
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
       - ferme-network
 
   dashboard:
     build: ./dashboard
-    container_name: dashboard
     ports:
       - "8502:8501"
+    environment:
+      - TZ=Europe/Paris
     networks:
       - ferme-network
 
@@ -64,4 +72,6 @@ volumes:
 
 networks:
   ferme-network:
-
+    name: ferme-network
+    driver: bridge
+    attachable: true
