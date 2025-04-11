@@ -117,23 +117,6 @@ def get_data(plant_id: str = Query(..., description="ID de la plante à interrog
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# Test manuel du décodage
-
-raw_payload = b"halzZW5zb3JfaWSmNzQ2MzEyrnNlbnNvcl92ZXJzaW9upUZSLXY4qHBsYW50X2lkzgAAAAGkdGltZbQyMDI1LTA0LTEwVDIwOjQ3OjQ2WqhtZWFzdXJlc4KrdGVtcGVyYXR1cmWlMTTCsEOoaHVtaWRpdGWjMTIl"
-try:
-    decoded_data = decode_sensor_data(raw_payload)
-    print("Decoded data:", decoded_data)
-except Exception as e:
-    print("Error decoding payload:", e)
-
-raw_payload = b"hKhwbGFudF9pZKlwbGFudGVfNDKrdGVtcGVyYXR1cmXLQDWAAAAAAACoaHVtaWRpdHnLQE4AAAAAAACpdGltZXN0YW1wszIwMjQtMDQtMDhUMTQ6MDA6MDA="
-try:
-    decoded_data = decode_sensor_data(raw_payload)
-    print("Decoded data:", decoded_data)
-except Exception as e:
-    print("Error decoding payload:", e)
-
-
 def validate_sensor_payload(data: dict) -> (bool, list):
     errors = []
     if not data.get("plant_id") or not isinstance(data.get("plant_id"), str):

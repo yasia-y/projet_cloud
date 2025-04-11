@@ -3,6 +3,8 @@ from fastapi.testclient import TestClient
 from main import app
 import base64
 import msgpack
+import random
+import time
 
 client = TestClient(app)
 
@@ -22,14 +24,25 @@ def generate_payload():
     return encoded
 
 
-def test_ingest_valid():
-    payload = {
+def generate_random_payload():
+    temperature = round(random.uniform(15, 35), 2)
+    humidity = round(random.uniform(30, 90), 2)
+    timestamp = time.strftime("%Y-%m-%dT%H:%M:%SZ")
+    data = {
         "sensor_id": "17629",
         "sensor_version": "FR-v8",
         "plant_id": "2",
-        "time": "2025-04-11T07:33:06Z",
-        "measures": {"temperature": "25°C", "humidite": "50%"}
+        "time": timestamp,
+        "measures": {
+            "temperature": f"{temperature}°C",
+            "humidite": f"{humidity}%"
+        }
     }
+    return data
+
+
+def test_ingest_valid():
+    payload = generate_random_payload()
     response = client.post("/ingest", json=payload)
     assert response.status_code == 200
     assert response.json()["status"] == "OK"

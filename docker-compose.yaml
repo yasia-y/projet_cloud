@@ -6,7 +6,7 @@ services:
       context: ./ingestion-api
     container_name: ingestion-api
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/ferme_urbaine
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/ferme
     depends_on:
       - db
     networks:
@@ -19,7 +19,7 @@ services:
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: secret
-      POSTGRES_DB: ferme_urbaine
+      POSTGRES_DB: ferme
     ports:
       - "5432:5432"
     volumes:
