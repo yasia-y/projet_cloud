@@ -5,100 +5,130 @@ services:
     build:
       context: ./ingestion-api
     container_name: ingestion-api
-    ports:
-      - "8080:8000"  # Le port 8000 du conteneur est exposé sur le port 8080
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/ferme
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/ferme_urbaine
     depends_on:
       - db
     networks:
       - ferme-network
 
   db:
-    image: postgres:13
+    build:
+      context: ./database
     container_name: postgres-db
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: ferme
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: ferme_urbaine
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - ferme-network
 
+
   sensor1:
-    image: abelfodil/sensor:0.0.1
+    build:
+      context: ./sensor
+    container_name: sensor1
     environment:
-      - SERVER_URL=http://host.docker.internal:8000/ingest  # Modification ici pour le port 8000
-      - SCENARIO_ID=1
+      - SERVER_URL=http://ingestion-api:8000/ingest
+      - SENSOR_ID=1
+      - PLANT_ID=1
     networks:
-      - ferme-network  # Utilisation du réseau Docker
+      - ferme-network
 
   sensor2:
-    image: abelfodil/sensor:0.0.1
+    build:
+      context: ./sensor
+    container_name: sensor2
     environment:
-      - SERVER_URL=http://host.docker.internal:8000/ingest  # Modification ici pour le port 8000
-      - SCENARIO_ID=2
+      - SERVER_URL=http://ingestion-api:8000/ingest
+      - SENSOR_ID=2
+      - PLANT_ID=2
     networks:
       - ferme-network
 
   sensor3:
-    image: abelfodil/sensor:0.0.1
+    build:
+      context: ./sensor
+    container_name: sensor3
     environment:
-      - SERVER_URL=http://host.docker.internal:8000/ingest  # Modification ici pour le port 8000
-      - SCENARIO_ID=3
+      - SERVER_URL=http://ingestion-api:8000/ingest
+      - SENSOR_ID=3
+      - PLANT_ID=3
     networks:
       - ferme-network
 
   sensor4:
-    image: abelfodil/sensor:0.0.1
+    build:
+      context: ./sensor
+    container_name: sensor4
     environment:
-      - SERVER_URL=http://host.docker.internal:8000/ingest  # Modification ici pour le port 8000
-      - SCENARIO_ID=4
+      - SERVER_URL=http://ingestion-api:8000/ingest
+      - SENSOR_ID=4
+      - PLANT_ID=4
     networks:
       - ferme-network
 
   sensor5:
-    image: abelfodil/sensor:0.0.1
+    build:
+      context: ./sensor
+    container_name: sensor5
     environment:
-      - SERVER_URL=http://host.docker.internal:8000/ingest  # Modification ici pour le port 8000
-      - SCENARIO_ID=5
+      - SERVER_URL=http://ingestion-api:8000/ingest
+      - SENSOR_ID=5
+      - PLANT_ID=5
     networks:
       - ferme-network
 
   sensor6:
-    image: abelfodil/sensor:0.0.1
+    build:
+      context: ./sensor
+    container_name: sensor6
     environment:
-      - SERVER_URL=http://host.docker.internal:8000/ingest  # Modification ici pour le port 8000
-      - SCENARIO_ID=6
+      - SERVER_URL=http://ingestion-api:8000/ingest
+      - SENSOR_ID=6
+      - PLANT_ID=6
     networks:
       - ferme-network
 
   sensor7:
-    image: abelfodil/sensor:0.0.1
+    build:
+      context: ./sensor
+    container_name: sensor7
     environment:
-      - SERVER_URL=http://host.docker.internal:8000/ingest  # Modification ici pour le port 8000
-      - SCENARIO_ID=7
+      - SERVER_URL=http://ingestion-api:8000/ingest
+      - SENSOR_ID=7
+      - PLANT_ID=7
     networks:
       - ferme-network
 
   sensor8:
-    image: abelfodil/sensor:0.0.1
+    build:
+      context: ./sensor
+    container_name: sensor8
     environment:
-      - SERVER_URL=http://host.docker.internal:8000/ingest  # Modification ici pour le port 8000
-      - SCENARIO_ID=8
+      - SERVER_URL=http://ingestion-api:8000/ingest
+      - SENSOR_ID=8
+      - PLANT_ID=8
     networks:
       - ferme-network
 
-  data-fetcher:
+  detection:
     build:
-      context: ./data-fetcher
-    container_name: data-fetcher
-    depends_on:
-      - ingestion-api
+      context: ./detection
+    container_name: detection
+    networks:
+      - ferme-network
+
+  dashboard:
+    build:
+      context: ./dashboard
+    container_name: dashboard
+    ports:
+      - "8501:8501"
     networks:
       - ferme-network
 
@@ -107,4 +137,3 @@ volumes:
 
 networks:
   ferme-network:
-    driver: bridge  # Utilisation d'un réseau Docker pont pour permettre la communication entre services

@@ -1,3 +1,6 @@
+import logging
+
+
 def validate_sensor_payload(data: dict) -> (bool, list):
     errors = []
     if not data.get("plant_id") or not isinstance(data.get("plant_id"), str):

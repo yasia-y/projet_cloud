@@ -1,6 +1,7 @@
 import base64
 import msgpack
 
+
 def decode_sensor_data(raw_payload: bytes) -> dict:
     try:
         # Décodage Base64
@@ -11,4 +12,5 @@ def decode_sensor_data(raw_payload: bytes) -> dict:
         data = msgpack.unpackb(binary_data, raw=False)
         return data
     except Exception as e:
-        raise ValueError(f"Erreur lors du décodage des données du capteur : {e}")
+        raise ValueError(
+            f"Erreur lors du décodage des données du capteur : {e}")

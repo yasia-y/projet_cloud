@@ -1,9 +1,13 @@
+import psycopg2
 from fastapi.testclient import TestClient
 from main import app
 import base64
 import msgpack
 
 client = TestClient(app)
+
+# Configuration de la base de données
+DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/ferme_urbaine"
 
 
 def generate_payload():
@@ -37,6 +41,11 @@ def test_ingest_invalid():
 
 
 def test_ingest_and_db_insertion():
+    # Connexion à la base de données
+    conn = psycopg2.connect(DATABASE_URL)
+    cursor = conn.cursor()
+
+    # Payload pour le test
     payload = {
         "sensor_id": "17629",
         "sensor_version": "FR-v8",
@@ -44,14 +53,20 @@ def test_ingest_and_db_insertion():
         "time": "2025-04-11T07:33:06Z",
         "measures": {"temperature": "25°C", "humidite": "50%"}
     }
+
+    # Envoi de la requête à l'API
     response = client.post("/ingest", json=payload)
     assert response.status_code == 200
     assert response.json()["status"] == "OK"
 
-    # Verify the data in the database
+    # Vérification des données dans la base de données
     cursor.execute("SELECT * FROM sensor_data WHERE plant_id = %s", ("2",))
     result = cursor.fetchone()
     assert result is not None
     assert result[1] == "2"  # plant_id
     assert result[2] == 25.0  # temperature
     assert result[3] == 50.0  # humidity
+
+    # Fermeture de la connexion
+    cursor.close()
+    conn.close()
