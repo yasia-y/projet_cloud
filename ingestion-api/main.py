@@ -34,34 +34,53 @@ async def ingest(request: Request):
             decoded_data = decode_sensor_data(raw_payload)
             logging.info(f"Decoded data: {decoded_data}")
         except Exception as e:
-            logging.error(f"Error decoding data: {e}")
+            logging.error(f"Error decoding payload: {e}")
             raise HTTPException(
-                status_code=400, detail="Invalid payload format")
+                status_code=400, detail="Invalid payload encoding")
 
-        # Étape 2 : Validation des données
-        is_valid, errors = validate_sensor_payload(decoded_data)
+        # Vérifiez les champs requis
+        if not decoded_data.get("plant_id") or not decoded_data.get("time") or \
+           not decoded_data.get("measures", {}).get("temperature") or \
+           not decoded_data.get("measures", {}).get("humidite"):
+            logging.error(
+                f"Missing required fields in decoded data: {decoded_data}")
+            raise HTTPException(
+                status_code=400, detail="Missing required fields in payload")
+
+        # Étape 2 : Transformation des données
+        transformed_data = {
+            # Convertir en chaîne de caractères
+            "plant_id": str(decoded_data.get("plant_id")),
+            "temperature": convert_measurements(decoded_data.get("measures", {}).get("temperature")),
+            "humidity": convert_measurements(decoded_data.get("measures", {}).get("humidite")),
+            "timestamp": decoded_data.get("time"),
+        }
+        logging.info(f"Transformed data: {transformed_data}")
+
+        # Étape 3 : Validation des données
+        is_valid, errors = validate_sensor_payload(transformed_data)
         if not is_valid:
             logging.error(f"Validation errors: {errors}")
             raise HTTPException(status_code=400, detail=errors)
 
-        # Étape 3 : Insertion dans la base de données
+        # Étape 4 : Insertion dans la base de données
         try:
             cursor.execute("""
                 INSERT INTO sensor_data (plant_id, temperature, humidity, timestamp)
                 VALUES (%s, %s, %s, %s)
             """, (
-                decoded_data["plant_id"],
-                decoded_data["temperature"],
-                decoded_data["humidity"],
-                decoded_data["timestamp"]
+                transformed_data["plant_id"],
+                transformed_data["temperature"],
+                transformed_data["humidity"],
+                transformed_data["timestamp"]
             ))
             conn.commit()
-            logging.info(f"Data inserted successfully: {decoded_data}")
+            logging.info(f"Data inserted successfully: {transformed_data}")
         except Exception as e:
             logging.error(f"Database insertion error: {e}")
             raise HTTPException(status_code=500, detail="Database error")
 
-        return {"status": "OK", "data": decoded_data}
+        return {"status": "OK", "data": transformed_data}
     except Exception as e:
         logging.error(f"Unhandled error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -107,16 +126,36 @@ try:
 except Exception as e:
     print("Error decoding payload:", e)
 
+raw_payload = b"hKhwbGFudF9pZKlwbGFudGVfNDKrdGVtcGVyYXR1cmXLQDWAAAAAAACoaHVtaWRpdHnLQE4AAAAAAACpdGltZXN0YW1wszIwMjQtMDQtMDhUMTQ6MDA6MDA="
+try:
+    decoded_data = decode_sensor_data(raw_payload)
+    print("Decoded data:", decoded_data)
+except Exception as e:
+    print("Error decoding payload:", e)
+
 
 def validate_sensor_payload(data: dict) -> (bool, list):
     errors = []
-    if "plant_id" not in data or not isinstance(data.get("plant_id"), str):
+    if not data.get("plant_id") or not isinstance(data.get("plant_id"), str):
         errors.append("plant_id manquant ou invalide")
-    if "temperature" not in data or not isinstance(data.get("temperature"), (int, float)):
+    if data.get("temperature") is None or not isinstance(data.get("temperature"), (int, float)):
         errors.append("temperature manquante ou invalide")
-    if "humidity" not in data or not isinstance(data.get("humidity"), (int, float)):
+    if data.get("humidity") is None or not isinstance(data.get("humidity"), (int, float)):
         errors.append("humidity manquante ou invalide")
-    if "timestamp" not in data:
+    if not data.get("timestamp"):
         errors.append("timestamp manquant")
     logging.info(f"Validation result: {len(errors) == 0}, errors: {errors}")
     return (len(errors) == 0, errors)
+
+
+# Example payload for testing
+example_payload = {
+    "sensor_id": "17629",
+    "sensor_version": "FR-v8",
+    "plant_id": "2",
+    "time": "2025-04-11T07:51:34Z",
+    "measures": {
+        "temperature": "25°C",
+        "humidite": "50%"
+    }
+}

@@ -1,3 +1,6 @@
+import time
+
+
 def detect_anomalies(data: dict) -> list:
     anomalies = []
     temp = data.get("temperature")
@@ -10,8 +13,11 @@ def detect_anomalies(data: dict) -> list:
             anomalies.append("Humidity out of range")
     return anomalies
 
+
 # Exemple d'utilisation
 if __name__ == "__main__":
-    sample_data = {"temperature": 60, "humidity": 50}
-    result = detect_anomalies(sample_data)
-    print("Anomalies détectées :", result)
+    while True:
+        sample_data = {"temperature": 60, "humidity": 50}
+        result = detect_anomalies(sample_data)
+        print("Anomalies dÃ©tectÃ©es :", result)
+        time.sleep(10)

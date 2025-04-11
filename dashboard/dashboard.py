@@ -58,3 +58,4 @@ if st.sidebar.button("Rafraîchir maintenant"):
                 st.line_chart(sensor_data.set_index("timestamp")["valeur"])
     else:
         st.warning("Aucune donnée disponible.")
+
