@@ -29,61 +29,41 @@ services:
     networks:
       - ferme-network
 
+  dashboard:
+    build:
+      context: ./dashboard
+    container_name: dashboard
+    ports:
+      - "8501:8501"
+    depends_on:
+      - db
+    networks:
+      - ferme-network
+
+  detection:
+    build:
+      context: ./detection
+    container_name: detection
+    depends_on:
+      - db
+    networks:
+      - ferme-network
+
   sensor1:
     image: abelfodil/sensor:0.0.1
     environment:
-      - SERVER_URL=http://host.docker.internal:8080/ingest
+      - SERVER_URL=http://ingestion-api:8000/ingest
       - SCENARIO_ID=1
-    network_mode: "host"
+    networks:
+      - ferme-network
 
   sensor2:
     image: abelfodil/sensor:0.0.1
     environment:
-      - SERVER_URL=http://host.docker.internal:8080/ingest
+      - SERVER_URL=http://ingestion-api:8000/ingest
       - SCENARIO_ID=2
-    network_mode: "host"
-
-  sensor3:
-    image: abelfodil/sensor:0.0.1
-    environment:
-      - SERVER_URL=http://host.docker.internal:8080/ingest
-      - SCENARIO_ID=3
-    network_mode: "host"
-
-  sensor4:
-    image: abelfodil/sensor:0.0.1
-    environment:
-      - SERVER_URL=http://host.docker.internal:8080/ingest
-      - SCENARIO_ID=4
-    network_mode: "host"
-
-  sensor5:
-    image: abelfodil/sensor:0.0.1
-    environment:
-      - SERVER_URL=http://host.docker.internal:8080/ingest
-      - SCENARIO_ID=5
-    network_mode: "host"
-
-  sensor6:
-    image: abelfodil/sensor:0.0.1
-    environment:
-      - SERVER_URL=http://host.docker.internal:8080/ingest
-      - SCENARIO_ID=6
-    network_mode: "host"
-
-  sensor7:
-    image: abelfodil/sensor:0.0.1
-    environment:
-      - SERVER_URL=http://host.docker.internal:8080/ingest
-      - SCENARIO_ID=7
-    network_mode: "host"
-
-  sensor8:
-    image: abelfodil/sensor:0.0.1
-    environment:
-      - SERVER_URL=http://host.docker.internal:8080/ingest
-      - SCENARIO_ID=8
-    network_mode: "host"
+    networks:
+      - ferme-network
 
 volumes:
   pgdata:
