@@ -6,9 +6,10 @@ services:
       context: ./ingestion-api
     container_name: ingestion-api
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/ferme
+      - DATABASE_URL=postgresql://admin:secret@db:5432/ferme
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
       - ferme-network
 
@@ -17,20 +18,23 @@ services:
       context: ./database
     container_name: postgres-db
     environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: secret
-      POSTGRES_DB: ferme
+      - POSTGRES_DB=ferme
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=secret
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:
       - ferme-network
-
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   sensor1:
-    build:
-      context: ./sensor
+    build: ./sensor
     container_name: sensor1
     environment:
       - SERVER_URL=http://ingestion-api:8000/ingest
@@ -39,96 +43,19 @@ services:
     networks:
       - ferme-network
 
-  sensor2:
-    build:
-      context: ./sensor
-    container_name: sensor2
-    environment:
-      - SERVER_URL=http://ingestion-api:8000/ingest
-      - SENSOR_ID=2
-      - PLANT_ID=2
-    networks:
-      - ferme-network
-
-  sensor3:
-    build:
-      context: ./sensor
-    container_name: sensor3
-    environment:
-      - SERVER_URL=http://ingestion-api:8000/ingest
-      - SENSOR_ID=3
-      - PLANT_ID=3
-    networks:
-      - ferme-network
-
-  sensor4:
-    build:
-      context: ./sensor
-    container_name: sensor4
-    environment:
-      - SERVER_URL=http://ingestion-api:8000/ingest
-      - SENSOR_ID=4
-      - PLANT_ID=4
-    networks:
-      - ferme-network
-
-  sensor5:
-    build:
-      context: ./sensor
-    container_name: sensor5
-    environment:
-      - SERVER_URL=http://ingestion-api:8000/ingest
-      - SENSOR_ID=5
-      - PLANT_ID=5
-    networks:
-      - ferme-network
-
-  sensor6:
-    build:
-      context: ./sensor
-    container_name: sensor6
-    environment:
-      - SERVER_URL=http://ingestion-api:8000/ingest
-      - SENSOR_ID=6
-      - PLANT_ID=6
-    networks:
-      - ferme-network
-
-  sensor7:
-    build:
-      context: ./sensor
-    container_name: sensor7
-    environment:
-      - SERVER_URL=http://ingestion-api:8000/ingest
-      - SENSOR_ID=7
-      - PLANT_ID=7
-    networks:
-      - ferme-network
-
-  sensor8:
-    build:
-      context: ./sensor
-    container_name: sensor8
-    environment:
-      - SERVER_URL=http://ingestion-api:8000/ingest
-      - SENSOR_ID=8
-      - PLANT_ID=8
-    networks:
-      - ferme-network
-
   detection:
-    build:
-      context: ./detection
+    build: ./detection
     container_name: detection
+    depends_on:
+      - db
     networks:
       - ferme-network
 
   dashboard:
-    build:
-      context: ./dashboard
+    build: ./dashboard
     container_name: dashboard
     ports:
-      - "8501:8501"
+      - "8502:8501"
     networks:
       - ferme-network
 
@@ -137,3 +64,4 @@ volumes:
 
 networks:
   ferme-network:
+

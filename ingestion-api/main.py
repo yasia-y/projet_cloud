@@ -9,62 +9,59 @@ from fastapi import Query
 app = FastAPI()
 logging.basicConfig(level=logging.INFO)
 
-# Connexion à PostgreSQL
-DATABASE_URL = "postgresql://postgres:postgres@db:5432/ferme"
+# Connexion à PostgreSQL via variable d'env
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://admin:secret@db:5432/ferme")
 
-try:
-    conn = psycopg2.connect(DATABASE_URL)
-    cursor = conn.cursor()
-    cursor.execute("SELECT 1;")
-    print("Database connection successful")
-except Exception as e:
-    print("Database connection error:", e)
-
-# filepath: ingestion-api/main.py
-
+TEMP_MIN = 10.0  # Beaucoup de plantes meurent ou arrête de croître
+TEMP_MAX = 35.0  # Au-delà, la photosynthèse est perturbée
+HUM_MIN = 30.0  # Trop sec, stress hydrique
+HUM_MAX = 80.0  # Risque de moisissures, champignons
 
 @app.post("/ingest")
 async def ingest(request: Request):
-    global cursor  # Ajoutez cette ligne pour rendre `cursor` accessible
     try:
         raw_payload = await request.body()
         logging.info(f"Raw payload received: {raw_payload}")
 
-        # Étape 1 : Décodage des données
+        # Étape 1 : Décodage
         try:
             decoded_data = decode_sensor_data(raw_payload)
             logging.info(f"Decoded data: {decoded_data}")
         except Exception as e:
             logging.error(f"Error decoding payload: {e}")
-            raise HTTPException(
-                status_code=400, detail="Invalid payload encoding")
+            raise HTTPException(status_code=400, detail="Invalid payload encoding")
 
-        # Vérifiez les champs requis
-        if not decoded_data.get("plant_id") or not decoded_data.get("time") or \
-           not decoded_data.get("measures", {}).get("temperature") or \
-           not decoded_data.get("measures", {}).get("humidite"):
-            logging.error(
-                f"Missing required fields in decoded data: {decoded_data}")
-            raise HTTPException(
-                status_code=400, detail="Missing required fields in payload")
-
-        # Étape 2 : Transformation des données
+        # Étape 2 : Transformation
         transformed_data = {
             "plant_id": str(decoded_data.get("plant_id")),
-            "temperature": convert_measurements(decoded_data.get("measures", {}).get("temperature")),
-            "humidity": convert_measurements(decoded_data.get("measures", {}).get("humidite")),
-            "timestamp": decoded_data.get("time"),
+            "temperature": convert_measurements(decoded_data["measures"]["temperature"]),
+            "humidity": convert_measurements(decoded_data["measures"]["humidite"]),
+            "timestamp": decoded_data["time"]
         }
         logging.info(f"Transformed data: {transformed_data}")
 
-        # Étape 3 : Validation des données
+        # Étape 3 : Validation
         is_valid, errors = validate_sensor_payload(transformed_data)
         if not is_valid:
             logging.error(f"Validation errors: {errors}")
             raise HTTPException(status_code=400, detail=errors)
 
-        # Étape 4 : Insertion dans la base de données
+        # Initialisation des alertes
+        alerts = []
+
+        # Vérification des alertes
+        if transformed_data["temperature"] > TEMP_MAX:
+            alerts.append(f"ALERTE 🔥: Température anormale ({transformed_data['temperature']}°C) pour la plante {transformed_data['plant_id']}")
+        if not HUM_MIN <= transformed_data["humidity"] <= HUM_MAX:
+            alerts.append(f"ALERTE 💧: Humidité anormale ({transformed_data['humidity']}%) pour la plante {transformed_data['plant_id']}")
+
+        for alert in alerts:
+            logging.warning(alert)
+
+        # Étape 4 : Insertion en BDD
         try:
+            conn = psycopg2.connect(DATABASE_URL)
+            cursor = conn.cursor()
             cursor.execute("""
                 INSERT INTO sensor_data (plant_id, temperature, humidity, timestamp)
                 VALUES (%s, %s, %s, %s)
@@ -75,7 +72,9 @@ async def ingest(request: Request):
                 transformed_data["timestamp"]
             ))
             conn.commit()
-            logging.info(f"Data inserted successfully: {transformed_data}")
+            cursor.close()
+            conn.close()
+            logging.info("Data inserted successfully.")
         except Exception as e:
             logging.error(f"Database insertion error: {e}")
             raise HTTPException(status_code=500, detail="Database error")
@@ -94,6 +93,8 @@ async def health():
 @app.get("/data")
 def get_data(plant_id: str = Query(..., description="ID de la plante à interroger")):
     try:
+        conn = psycopg2.connect(DATABASE_URL)
+        cursor = conn.cursor()
         cursor.execute("""
             SELECT plant_id, temperature, humidity, timestamp
             FROM sensor_data
@@ -102,43 +103,20 @@ def get_data(plant_id: str = Query(..., description="ID de la plante à interrog
             LIMIT 20
         """, (plant_id,))
         rows = cursor.fetchall()
+        cursor.close()
+        conn.close()
 
-        results = [
-            {
-                "plant_id": r[0],
-                "temperature": r[1],
-                "humidity": r[2],
-                "timestamp": r[3].isoformat()
-            }
-            for r in rows
-        ]
-        return {"results": results}
+        return {
+            "results": [
+                {
+                    "plant_id": r[0],
+                    "temperature": r[1],
+                    "humidity": r[2],
+                    "timestamp": r[3].isoformat()
+                } for r in rows
+            ]
+        }
     except Exception as e:
+        logging.error(f"DB read error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-
-def validate_sensor_payload(data: dict) -> (bool, list):
-    errors = []
-    if not data.get("plant_id") or not isinstance(data.get("plant_id"), str):
-        errors.append("plant_id manquant ou invalide")
-    if data.get("temperature") is None or not isinstance(data.get("temperature"), (int, float)):
-        errors.append("temperature manquante ou invalide")
-    if data.get("humidity") is None or not isinstance(data.get("humidity"), (int, float)):
-        errors.append("humidity manquante ou invalide")
-    if not data.get("timestamp"):
-        errors.append("timestamp manquant")
-    logging.info(f"Validation result: {len(errors) == 0}, errors: {errors}")
-    return (len(errors) == 0, errors)
-
-
-# Example payload for testing
-example_payload = {
-    "sensor_id": "17629",
-    "sensor_version": "FR-v8",
-    "plant_id": "2",
-    "time": "2025-04-11T07:51:34Z",
-    "measures": {
-        "temperature": "25°C",
-        "humidite": "50%"
-    }
-}
