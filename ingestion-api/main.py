@@ -10,7 +10,7 @@ app = FastAPI()
 logging.basicConfig(level=logging.INFO)
 
 # Connexion à PostgreSQL
-DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/ferme"
+DATABASE_URL = "postgresql://postgres:postgres@db:5432/ferme"
 
 try:
     conn = psycopg2.connect(DATABASE_URL)
@@ -25,6 +25,7 @@ except Exception as e:
 
 @app.post("/ingest")
 async def ingest(request: Request):
+    global cursor  # Ajoutez cette ligne pour rendre `cursor` accessible
     try:
         raw_payload = await request.body()
         logging.info(f"Raw payload received: {raw_payload}")
@@ -49,7 +50,6 @@ async def ingest(request: Request):
 
         # Étape 2 : Transformation des données
         transformed_data = {
-            # Convertir en chaîne de caractères
             "plant_id": str(decoded_data.get("plant_id")),
             "temperature": convert_measurements(decoded_data.get("measures", {}).get("temperature")),
             "humidity": convert_measurements(decoded_data.get("measures", {}).get("humidite")),
