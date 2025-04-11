@@ -3,7 +3,7 @@ import logging
 import psycopg2
 from fastapi import FastAPI, Request, HTTPException
 from parser import decode_sensor_data
-from validator import validate_sensor_payload
+from validator import validate_sensor_payload, convert_measurements
 from fastapi import Query
 
 app = FastAPI()
