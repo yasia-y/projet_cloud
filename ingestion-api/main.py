@@ -168,9 +168,16 @@ def get_data(
     try:
         with get_db_connection() as conn:
             with conn.cursor() as cursor:
-                # Construction dynamique de la requête
+                # Modification de la requête SQL
                 base_query = """
-                    SELECT plant_id, temperature, humidity, timestamp, anomaly, sensor_id
+                    SELECT 
+                        plant_id, 
+                        temperature, 
+                        humidity, 
+                        timestamp, 
+                        anomaly,
+                        cross_sensor_issue,
+                        sensor_id
                     FROM sensor_data
                     WHERE plant_id = %s
                 """
@@ -196,8 +203,10 @@ def get_data(
                             "humidity": float(row[2]),
                             "timestamp": row[3].isoformat(),
                             "anomaly": bool(row[4]),
-                            "sensor_id": row[5]  # Ajouté
-                        } for row in cursor.fetchall()
+                            "cross_sensor_issue": bool(row[5]),
+                            "sensor_id": row[6]
+                        } 
+                        for row in cursor.fetchall()
                     ]
                 }
                 

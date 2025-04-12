@@ -6,7 +6,8 @@ CREATE TABLE IF NOT EXISTS sensor_data (
     temperature FLOAT NOT NULL, -- Ajouté
     humidity FLOAT NOT NULL,    -- Ajouté
     timestamp TIMESTAMPTZ NOT NULL,
-    anomaly BOOLEAN DEFAULT FALSE
+    anomaly BOOLEAN DEFAULT FALSE,
+    cross_sensor_issue BOOLEAN DEFAULT FALSE
 );
 
 CREATE INDEX idx_plant ON sensor_data (plant_id);
