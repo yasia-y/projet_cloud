@@ -1,15 +1,37 @@
-# Functions to query the ingestion API and retrieve processed sensor data.
-# Handle retries, timeouts, and data formatting.
-
 import requests
+from datetime import datetime
 
-API_URL = "http://ingestion-api:8000/data"
+API_BASE = "http://ingestion-api:8000"
 
-def get_data_for_plant(plant_id):
+def get_plants():
     try:
-        response = requests.get(API_URL, params={"plant_id": plant_id})
+        response = requests.get(f"{API_BASE}/plants")
+        response.raise_for_status()
         return response.json()
-    except Exception as e:
-        print(f"Erreur de récupération via API : {e}")
-        return {}
+    except Exception:
+        return []
 
+def get_sensors(plant_id):
+    try:
+        response = requests.get(
+            f"{API_BASE}/sensors",
+            params={"plant_id": plant_id}
+        )
+        response.raise_for_status()
+        return response.json()
+    except Exception:
+        return []
+
+def get_sensor_data(plant_id, sensor_id, start, end):
+    try:
+        params = {
+            "plant_id": plant_id,
+            "sensor_id": sensor_id,
+            "start": start.isoformat(),
+            "end": end.isoformat()
+        }
+        response = requests.get(f"{API_BASE}/data", params=params)
+        response.raise_for_status()
+        return response.json()["results"]
+    except Exception:
+        return []

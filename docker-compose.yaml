@@ -4,6 +4,8 @@ services:
   ingestion-api:
     build:
       context: ./ingestion-api
+    ports:
+      - "8000:8000"
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/plant_monitoring
       - TZ=Europe/Paris
@@ -16,6 +18,7 @@ services:
   db:
     build:
       context: ./database
+      dockerfile: Dockerfile
     environment:
       - POSTGRES_DB=plant_monitoring
       - POSTGRES_USER=postgres
@@ -25,19 +28,68 @@ services:
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d plant_monitoring"]
       interval: 10s
-      timeout: 10s
-      retries: 15
-      start_period: 40s
+      timeout: 15s
+      retries: 20
+      start_period: 60s
     networks:
       - ferme-network
 
-  sensor1:
+  # Capteurs français (FR-v8)
+  sensor-fr-1:
     build: ./sensor
     environment:
       - SERVER_URL=http://ingestion-api:8000/ingest
-      - SENSOR_ID=1
+      - SENSOR_ID=FR-001
+      - SENSOR_VERSION=FR-v8
       - PLANT_ID=1
       - TZ=Europe/Paris
+      - INTERVAL=10
+    depends_on:
+      ingestion-api:
+        condition: service_started
+    networks:
+      - ferme-network
+
+  sensor-fr-2:
+    build: ./sensor
+    environment:
+      - SERVER_URL=http://ingestion-api:8000/ingest
+      - SENSOR_ID=FR-002
+      - SENSOR_VERSION=FR-v8
+      - PLANT_ID=2
+      - TZ=Europe/Paris
+      - INTERVAL=15
+    depends_on:
+      ingestion-api:
+        condition: service_started
+    networks:
+      - ferme-network
+
+  # Capteurs anglais (EN-v2)
+  sensor-en-1:
+    build: ./sensor
+    environment:
+      - SERVER_URL=http://ingestion-api:8000/ingest
+      - SENSOR_ID=EN-001
+      - SENSOR_VERSION=EN-v2
+      - PLANT_ID=1
+      - TZ=Europe/Paris
+      - INTERVAL=12
+    depends_on:
+      ingestion-api:
+        condition: service_started
+    networks:
+      - ferme-network
+
+  sensor-en-2:
+    build: ./sensor
+    environment:
+      - SERVER_URL=http://ingestion-api:8000/ingest
+      - SENSOR_ID=EN-002
+      - SENSOR_VERSION=EN-v2
+      - PLANT_ID=2
+      - TZ=Europe/Paris
+      - INTERVAL=8
     depends_on:
       ingestion-api:
         condition: service_started
@@ -64,6 +116,8 @@ services:
       - "8502:8501"
     environment:
       - TZ=Europe/Paris
+    depends_on:
+      - ingestion-api
     networks:
       - ferme-network
 

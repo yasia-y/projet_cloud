@@ -2,5 +2,5 @@ fastapi
 uvicorn
 msgpack
 pydantic
-pytest
 psycopg2-binary
+python-dateutil
