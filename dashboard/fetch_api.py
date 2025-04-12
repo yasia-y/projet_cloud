@@ -32,6 +32,6 @@ def get_sensor_data(plant_id, sensor_id, start, end):
         }
         response = requests.get(f"{API_BASE}/data", params=params)
         response.raise_for_status()
-        return response.json()["results"]
+        return response.json().get("results", [])
     except Exception:
         return []

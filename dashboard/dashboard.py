@@ -45,7 +45,7 @@ def main():
             selected_plant = st.selectbox(
                 "Plante 🌱", 
                 options=plants,
-                format_func=lambda x: f"PLANTE {x}"  # Format simplifié
+                format_func=lambda x: f"PLANTE {x}"
             )
             
             # Récupération des capteurs avec gestion d'erreur
@@ -92,33 +92,45 @@ def main():
             return
 
         df = pd.DataFrame(data)
+        
+        # Vérification du format des données
+        if 'anomaly' not in df.columns:
+            df['anomaly'] = False
+            
         df["timestamp"] = pd.to_datetime(df["timestamp"])
         
+        # Gestion spécifique de la dernière mesure
+        latest = df.iloc[-1].copy()
+        if isinstance(latest, pd.Series):
+            latest = latest.to_dict()
+
         # Section des métriques
         col1, col2, col3, col4 = st.columns(4)
-        latest = df.iloc[-1]
         
         with col1:
-            st.markdown(f'<div class="metric-card {"critical" if latest["anomaly"] else ""}">'
+            is_anomaly = latest.get('anomaly', False)
+            if isinstance(is_anomaly, pd.Series):
+                is_anomaly = is_anomaly.any()
+            st.markdown(f'<div class="metric-card {"critical" if is_anomaly else ""}">'
                         f'<h3>🌡 Température Actuelle</h3>'
-                        f'<h1>{latest["temperature"]:.1f}°C</h1></div>', 
+                        f'<h1>{latest.get("temperature", 0.0):.1f}°C</h1></div>', 
                         unsafe_allow_html=True)
         
         with col2:
-            st.markdown(f'<div class="metric-card {"critical" if latest["anomaly"] else ""}">'
+            st.markdown(f'<div class="metric-card {"critical" if is_anomaly else ""}">'
                         f'<h3>💧 Humidité Actuelle</h3>'
-                        f'<h1>{latest["humidity"]:.1f}%</h1></div>', 
+                        f'<h1>{latest.get("humidity", 0.0):.1f}%</h1></div>', 
                         unsafe_allow_html=True)
         
         with col3:
-            anomaly_count = df[df["anomaly"]].shape[0]
+            anomaly_count = df['anomaly'].sum() if 'anomaly' in df.columns else 0
             st.markdown(f'<div class="metric-card {"warning" if anomaly_count > 0 else ""}">'
                         f'<h3>🚨 Anomalies</h3>'
-                        f'<h1>{anomaly_count}</h1></div>', 
+                        f'<h1>{int(anomaly_count)}</h1></div>', 
                         unsafe_allow_html=True)
         
         with col4:
-            sensor_version = selected_sensor["sensor_version"]
+            sensor_version = selected_sensor.get("sensor_version", "N/A")
             st.markdown(f'<div class="metric-card">'
                         f'<h3>📟 Version Capteur</h3>'
                         f'<h1>{sensor_version}</h1></div>', 
@@ -126,12 +138,13 @@ def main():
 
         # Visualisations
         st.subheader("📈 Historique des Mesures")
-        fig = px.line(df, x="timestamp", y=["temperature", "humidity"],
-                    labels={"value": "Valeur", "timestamp": "Heure"},
-                    title=f"Mesures pour Plante {selected_plant} - Capteur {selected_sensor['sensor_id']}",
-                    height=500)
-        fig.update_layout(hovermode="x unified")
-        st.plotly_chart(fig, use_container_width=True)
+        if not df.empty:
+            fig = px.line(df, x="timestamp", y=["temperature", "humidity"],
+                        labels={"value": "Valeur", "timestamp": "Heure"},
+                        title=f"Mesures pour Plante {selected_plant} - Capteur {selected_sensor['sensor_id']}",
+                        height=500)
+            fig.update_layout(hovermode="x unified")
+            st.plotly_chart(fig, use_container_width=True)
 
         # Détails des anomalies
         if anomaly_count > 0:
@@ -159,20 +172,23 @@ def main():
                     st.button("📋 Détails", key=row["timestamp"])
 
         # Comparaison inter-capteurs
-        if len(sensors) > 1:
+        if len(sensors) > 1 and not df.empty:
             st.subheader("🔍 Comparaison Inter-Capteurs")
             all_data = []
             for sensor in sensors:
-                sensor_data = get_sensor_data(
-                    plant_id=selected_plant,
-                    sensor_id=sensor["sensor_id"],
-                    start=start_time,
-                    end=end_time
-                )
-                if sensor_data:
-                    df_sensor = pd.DataFrame(sensor_data)
-                    df_sensor["sensor_id"] = sensor["sensor_id"]
-                    all_data.append(df_sensor)
+                try:
+                    sensor_data = get_sensor_data(
+                        plant_id=selected_plant,
+                        sensor_id=sensor["sensor_id"],
+                        start=start_time,
+                        end=end_time
+                    )
+                    if sensor_data:
+                        df_sensor = pd.DataFrame(sensor_data)
+                        df_sensor["sensor_id"] = sensor["sensor_id"]
+                        all_data.append(df_sensor)
+                except Exception:
+                    continue
             
             if all_data:
                 comparison_df = pd.concat(all_data)

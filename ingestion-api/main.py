@@ -83,16 +83,20 @@ async def ingest(request: Request):
             conn = get_db_connection()
             with conn:
                 with conn.cursor() as cursor:
+                    # Dans la fonction @app.post("/ingest")
                     cursor.execute("""
-                        INSERT INTO sensor_data (sensor_id, sensor_version, plant_id, temperature, humidity, timestamp)
-                        VALUES (%s, %s, %s, %s, %s, %s)
+                        INSERT INTO sensor_data 
+                        (sensor_id, sensor_version, plant_id, temperature, humidity, timestamp, anomaly)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s)
                     """, (
                         decoded_data["sensor_id"],
                         decoded_data["sensor_version"],
                         transformed_data["plant_id"],
                         transformed_data["temperature"],
                         transformed_data["humidity"],
-                        transformed_data["timestamp"] ))
+                        transformed_data["timestamp"],
+                        len(alerts) > 0  # True si au moins une alerte
+                    ))
 
             logging.info("✅ Données insérées")
         except Exception as e:
@@ -155,17 +159,34 @@ async def health():
 
 
 @app.get("/data")
-def get_data(plant_id: str = Query(..., description="ID de la plante à interroger")):
+def get_data(
+    plant_id: int = Query(..., description="ID de la plante"),
+    sensor_id: str = Query(None, description="ID du capteur"),
+    start: str = Query(None, description="Date de début (ISO)"),
+    end: str = Query(None, description="Date de fin (ISO)")
+):
     try:
         with get_db_connection() as conn:
             with conn.cursor() as cursor:
-                cursor.execute("""
-                    SELECT plant_id, temperature, humidity, timestamp
+                # Construction dynamique de la requête
+                base_query = """
+                    SELECT plant_id, temperature, humidity, timestamp, anomaly, sensor_id
                     FROM sensor_data
                     WHERE plant_id = %s
-                    ORDER BY timestamp DESC
-                    LIMIT 20
-                """, (plant_id,))
+                """
+                params = [plant_id]
+                
+                if sensor_id:
+                    base_query += " AND sensor_id = %s"
+                    params.append(sensor_id)
+                
+                if start and end:
+                    base_query += " AND timestamp BETWEEN %s AND %s"
+                    params.extend([start, end])
+                
+                base_query += " ORDER BY timestamp DESC LIMIT 20"
+                
+                cursor.execute(base_query, tuple(params))
                 
                 return {
                     "results": [
@@ -173,7 +194,9 @@ def get_data(plant_id: str = Query(..., description="ID de la plante à interrog
                             "plant_id": row[0],
                             "temperature": float(row[1]),
                             "humidity": float(row[2]),
-                            "timestamp": row[3].isoformat()
+                            "timestamp": row[3].isoformat(),
+                            "anomaly": bool(row[4]),
+                            "sensor_id": row[5]  # Ajouté
                         } for row in cursor.fetchall()
                     ]
                 }
