@@ -1,34 +1,90 @@
-# 🌱 Projet Cloud – Supervision de ferme urbaine
+# Projet Cloud - Supervision de Ferme Urbaine
 
-Ce projet est une application cloud de supervision dédiée à une ferme urbaine connectée.  
-Elle permet de collecter, analyser et visualiser les données environnementales transmises par des capteurs (température, humidité) installés sur différentes plantations.
-
----
-
-## Objectif du projet
-
-L’objectif est de développer et simuler le déploiement d’une architecture cloud capable de :
-
-1. Recevoir en temps réel les données des capteurs de la ferme urbaine simulée.
-2. Stocker l’historique de ces données afin de les rendre exploitables pour le suivi et l’analyse.
-3. Permettre à un opérateur de superviser les données de chaque capteur via une interface simplifiée.
-4. Détecter automatiquement les anomalies (capteur défectueux ou problème sur la culture) pour notifier rapidement l’opérateur.
-
----
+Ce projet est une application de supervision pour une ferme urbaine connectée.  
+Il permet de collecter, analyser et visualiser les données des capteurs (température, humidité) installés sur différentes plantes.  
+L'application est composée de plusieurs services conteneurisés, orchestrés avec Docker Compose.
 
 ## Fonctionnalités principales
 
-- **Ingestion de données capteurs**  
-  Validation, traitement et stockage des informations dans une base de données PostgreSQL.
+### Ingestion des données des capteurs
 
-- **Détection d’anomalies**  
-  Analyse des données pour identifier les événements anormaux via un module d’alerte automatique.
+- Les capteurs envoient des données (température, humidité, etc.) à une API d'ingestion.
+- Les données sont validées, transformées et stockées dans une base de données PostgreSQL.
 
-- **Dashboard interactif**  
-  Visualisation en temps réel des mesures et des anomalies grâce à une interface utilisateur simple réalisée avec Streamlit.
+### Détection d'anomalies
 
-- **Simulation de capteurs**  
-  Génération et envoi de données simulées pour tester le système sans matériel réel.
+- Analyse des données pour détecter des anomalies environnementales (température ou humidité hors des seuils).
+- Détection des écarts entre capteurs pour une même plante.
+
+### Dashboard interactif
+
+- Visualisation des données en temps réel via des graphiques.
+- Affichage des anomalies détectées.
+- Comparaison des données entre plusieurs capteurs.
+
+### Simulation de capteurs
+
+- Génération de données simulées pour tester l'application.
+
+## Architecture des services
+
+Le projet est composé des services suivants :
+
+### 1. API d'ingestion (`ingestion-api`)
+
+- **Langage** : Python (FastAPI)  
+- **Port exposé** : 8000  
+- **Rôle** :
+  - Recevoir les données des capteurs.
+  - Valider et transformer les données.
+  - Insérer les données dans la base PostgreSQL.
+  - Détecter des anomalies simples.
+- **Fichiers principaux** :
+  - `main.py` : Contient les endpoints de l'API.
+  - `validator.py` : Valide les données des capteurs.
+  - `parser.py` : Décode les données encodées en MsgPack/Base64.
+
+### 2. Base de données (`database`)
+
+- **Technologie** : PostgreSQL  
+- **Port exposé** : 5432  
+- **Rôle** :
+  - Stocker les données des capteurs.
+  - Fournir des données pour le dashboard et les analyses.
+- **Fichiers principaux** :
+  - `init.sql` : Script SQL pour créer les tables nécessaires.
+
+### 3. Détection d'anomalies (`detection`)
+
+- **Langage** : Python  
+- **Rôle** :
+  - Analyser les données pour détecter des anomalies environnementales.
+  - Identifier les écarts entre capteurs pour une même plante.
+- **Fichiers principaux** :
+  - `detector.py` : Contient la logique de détection des anomalies.
+
+### 4. Simulation de capteurs (`sensor`)
+
+- **Langage** : Python  
+- **Rôle** :
+  - Générer des données simulées (température, humidité).
+  - Envoyer les données à l'API d'ingestion.
+- **Fichiers principaux** :
+  - `sensor.py` : Génère et envoie les données simulées.
+
+### 5. Dashboard (`dashboard`)
+
+- **Langage** : Python (Streamlit)  
+- **Port exposé** : 8502  
+- **Rôle** :
+  - Visualiser les données des capteurs.
+  - Afficher les anomalies détectées.
+  - Comparer les données entre plusieurs capteurs.
+- **Fichiers principaux** :
+  - `dashboard.py` : Interface utilisateur principale.
+  - `fetch_api.py` : Récupère les données depuis l'API d'ingestion.
+  - `graphs.py` : Génère les graphiques.
+
 
 ---
 
