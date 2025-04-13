@@ -39,7 +39,7 @@ Le projet est composé des services suivants :
   - Valider et transformer les données.
   - Insérer les données dans la base PostgreSQL.
   - Détecter des anomalies simples.
-- **Fichiers principaux** :
+- **Fichier(s)** :
   - `main.py` : Contient les endpoints de l'API.
   - `validator.py` : Valide les données des capteurs.
   - `parser.py` : Décode les données encodées en MsgPack/Base64.
@@ -51,7 +51,7 @@ Le projet est composé des services suivants :
 - **Rôle** :
   - Stocker les données des capteurs.
   - Fournir des données pour le dashboard et les analyses.
-- **Fichiers principaux** :
+- **Fichier(s)** :
   - `init.sql` : Script SQL pour créer les tables nécessaires.
 
 ### 3. Détection d'anomalies (`detection`)
@@ -60,7 +60,7 @@ Le projet est composé des services suivants :
 - **Rôle** :
   - Analyser les données pour détecter des anomalies environnementales.
   - Identifier les écarts entre capteurs pour une même plante.
-- **Fichiers principaux** :
+- **Fichier(s)** :
   - `detector.py` : Contient la logique de détection des anomalies.
 
 ### 4. Simulation de capteurs (`sensor`)
@@ -69,7 +69,7 @@ Le projet est composé des services suivants :
 - **Rôle** :
   - Générer des données simulées (température, humidité).
   - Envoyer les données à l'API d'ingestion.
-- **Fichiers principaux** :
+- **Fichier(s)** :
   - `sensor.py` : Génère et envoie les données simulées.
 
 ### 5. Dashboard (`dashboard`)
@@ -80,7 +80,7 @@ Le projet est composé des services suivants :
   - Visualiser les données des capteurs.
   - Afficher les anomalies détectées.
   - Comparer les données entre plusieurs capteurs.
-- **Fichiers principaux** :
+- **Fichier(s)** :
   - `dashboard.py` : Interface utilisateur principale.
   - `fetch_api.py` : Récupère les données depuis l'API d'ingestion.
   - `graphs.py` : Génère les graphiques.
