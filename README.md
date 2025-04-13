@@ -35,37 +35,33 @@ L’objectif est de développer et simuler le déploiement d’une architecture 
 ## Structure du projet
 
 projet_cloud/
-├── dashboard/               
-│   ├── dashboard.py         
-│   ├── fetch_api.py         
-│   ├── graphs.py            
-│   ├── requirements.txt     
-│   └── Dockerfile           
-│
-├── detection/               
-│   ├── detector.py          
-│   ├── utils.py             
-│   ├── requirements.txt     
-│   └── Dockerfile           
-│
-├── ingestion-api/           
-│   ├── main.py              
-│   ├── validator.py         
-│   ├── parser.py            
-│   ├── requirements.txt     
-│   └── Dockerfile           
-│
-├── sensor/                  
-│   ├── sensor.py            
-│   └── Dockerfile           
-│
-├── database/                
-│   ├── init.sql             
-│   └── Dockerfile           
-│
-├── docker-compose.yaml      
-├── README.md                
-└── LICENSE                  
+├── dashboard/
+│   ├── dashboard.py
+│   ├── fetch_api.py
+│   ├── graphs.py
+│   ├── requirements.txt
+│   └── Dockerfile
+├── detection/
+│   ├── detector.py
+│   ├── utils.py
+│   ├── requirements.txt
+│   └── Dockerfile
+├── ingestion-api/
+│   ├── main.py
+│   ├── validator.py
+│   ├── parser.py
+│   ├── requirements.txt
+│   └── Dockerfile
+├── sensor/
+│   ├── sensor.py
+│   └── Dockerfile
+├── database/
+│   ├── init.sql
+│   └── Dockerfile
+├── docker-compose.yaml
+├── README.md
+└── LICENSE
+             
 
 
 
