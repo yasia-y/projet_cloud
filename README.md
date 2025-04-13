@@ -35,37 +35,38 @@ L’objectif est de développer et simuler le déploiement d’une architecture 
 ## Structure du projet
 
 projet_cloud/
-├── dashboard/               # Interface utilisateur (Streamlit)
-│   ├── dashboard.py         # Interface principale
-│   ├── fetch_api.py         # Requête à l’API d’ingestion
-│   ├── graphs.py            # Génération des graphiques
-│   ├── requirements.txt     # Dépendances Python
-│   └── Dockerfile           # Image Docker
+├── dashboard/               
+│   ├── dashboard.py         
+│   ├── fetch_api.py         
+│   ├── graphs.py            
+│   ├── requirements.txt     
+│   └── Dockerfile           
 │
-├── detection/               # Détection d’anomalies
-│   ├── detector.py          # Analyse des données
-│   ├── utils.py             # Fonctions utilitaires
-│   ├── requirements.txt     # Dépendances Python
-│   └── Dockerfile           # Image Docker
+├── detection/               
+│   ├── detector.py          
+│   ├── utils.py             
+│   ├── requirements.txt     
+│   └── Dockerfile           
 │
-├── ingestion-api/           # API REST (FastAPI)
-│   ├── main.py              # Endpoints de l’API
-│   ├── validator.py         # Validation des données
-│   ├── parser.py            # Décodage des données
-│   ├── requirements.txt     # Dépendances Python
-│   └── Dockerfile           # Image Docker
+├── ingestion-api/           
+│   ├── main.py              
+│   ├── validator.py         
+│   ├── parser.py            
+│   ├── requirements.txt     
+│   └── Dockerfile           
 │
-├── sensor/                  # Simulateur de capteurs
-│   ├── sensor.py            # Génération de données aléatoires
-│   └── Dockerfile           # Image Docker
+├── sensor/                  
+│   ├── sensor.py            
+│   └── Dockerfile           
 │
-├── database/                # Base de données PostgreSQL
-│   ├── init.sql             # Script d’initialisation
-│   └── Dockerfile           # Image Docker
+├── database/                
+│   ├── init.sql             
+│   └── Dockerfile           
 │
-├── docker-compose.yaml      # Orchestration des services
-├── README.md                # Documentation du projet
-└── LICENSE                  # Licence (MIT)
+├── docker-compose.yaml      
+├── README.md                
+└── LICENSE                  
+
 
 
 ## Prérequis
