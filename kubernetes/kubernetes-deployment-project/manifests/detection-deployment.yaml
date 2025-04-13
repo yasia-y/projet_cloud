@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: detection
+  namespace: ferme-namespace
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: detection
+  template:
+    metadata:
+      labels:
+        app: detection
+    spec:
+      containers:
+      - name: detection
+        image: your-detection-image
+        env:
+        - name: DB_HOST
+          value: postgres-service
+        - name: DB_NAME
+          value: plant_monitoring
+        - name: DB_USER
+          value: postgres
+        - name: DB_PASSWORD
+          value: postgres

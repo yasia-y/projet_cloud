@@ -1,2 +1,0 @@
-# Kubernetes manifest to deploy the dashboard.
-# Expose the UI via NodePort or Ingress to allow users to access it in their browser.

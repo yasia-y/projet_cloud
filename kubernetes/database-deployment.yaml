@@ -1,2 +1,0 @@
-# Kubernetes manifest to deploy PostgreSQL.
-# Configure persistent volume, credentials, init script, and expose service within the cluster.

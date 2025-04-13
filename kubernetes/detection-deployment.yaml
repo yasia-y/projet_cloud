@@ -1,2 +1,0 @@
-# Kubernetes manifest for the detection module.
-# Define deployment specs, resource limits, and how it connects to the database or message queue (if any).

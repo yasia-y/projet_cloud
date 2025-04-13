@@ -1,2 +1,0 @@
-# Kubernetes manifest to deploy the ingestion API.
-# Define deployment and service resources with environment variables, port mappings, and image config.
