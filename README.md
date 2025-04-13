@@ -22,11 +22,14 @@ Ce projet a pour objectif de concevoir, développer et simuler le déploiement d
 **Installation & exécution**
 
 1. Cloner le dépôt
+   
 git clone https://github.com/yasia-y/projet_cloud.git
 
 
-32. Lancer les services avec Docker Compose
+2. Lancer les services avec Docker Compose
+   
 docker-compose up --build
 
-3. Accéder au dashboard
+4. Accéder au dashboard
+   
  http://localhost:8502
