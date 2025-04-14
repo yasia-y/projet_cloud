@@ -3,6 +3,7 @@ from datetime import datetime
 
 API_BASE = "http://ingestion-api:8000"
 
+# but : interroger l'endpoint /plants de l'API pour récupérer la liste des id. 
 def get_plants():
     try:
         response = requests.get(f"{API_BASE}/plants")
@@ -11,6 +12,7 @@ def get_plants():
     except Exception:
         return []
 
+# but : récupérer la liste des capteurs pour une plante spécifiée via l'endpoint /sensors
 def get_sensors(plant_id):
     try:
         response = requests.get(
@@ -22,6 +24,7 @@ def get_sensors(plant_id):
     except Exception:
         return []
 
+# but : obtenir les données enregistrées par un capteur spécifique sur une plage temporelle donnée via l'endpoint /data
 def get_sensor_data(plant_id, sensor_id, start, end):
     try:
         params = {

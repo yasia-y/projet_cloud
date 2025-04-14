@@ -25,6 +25,8 @@ logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
 
+# résoudre le nom de l'hôte jusqu'à 10 fois. retourne true dès que la résolution réussit
+
 def wait_for_dns_resolution() -> bool:
     """Attend que le nom d'hôte soit résolu par le DNS Docker"""
     max_retries = 10
@@ -40,6 +42,7 @@ def wait_for_dns_resolution() -> bool:
             time.sleep(wait_time)
     return False
 
+# autre check
 def get_db_connection():
     """Établit une connexion à la base de données avec réessais"""
     for attempt in range(5):
@@ -57,6 +60,8 @@ def get_db_connection():
             logging.warning("Échec connexion DB (tentative %d/5): %s", attempt+1, str(e))
             time.sleep(wait_time)
     raise Exception("Échec de connexion à la base de données après 5 tentatives")
+
+# requête SQL pour comparer les mesures de températures et humidités entre capteurs différents. identifie une anomalie et pour chaque anomalie détectée loggue un avertissement détaillant l'écart observé entre les capteurs.
 
 def detect_cross_sensor_anomalies(cursor, plant_id: int):
     """Détecte les anomalies entre capteurs sur la même plante"""
@@ -87,6 +92,8 @@ def detect_cross_sensor_anomalies(cursor, plant_id: int):
             f"[{ts.isoformat()}] PLANTE {plant_id} - Capteurs {sensor1} : {', '.join(anomalies)}"
         )
 
+# récupère les mesures des capteurs enregistrées durant les 2 dernières minutes, vérifie si la temp et l'hum est en dehors des limites critiques, en cas d'anomalie logge un message d'avertissement et met à jour pour marquer la donnée comme anormale.
+
 def detect_environment_anomalies(cursor):
     """Détecte les anomalies environnementales"""
     cursor.execute("""
@@ -112,6 +119,8 @@ def detect_environment_anomalies(cursor):
                 SET anomaly = TRUE
                 WHERE plant_id = %s AND sensor_id = %s AND timestamp = %s
             """, (plant_id, sensor_id, ts))
+
+# 
 
 def detect_gradual_drift(cursor):
     """Détecte les dérives progressives sur les 30 dernières minutes"""
@@ -142,6 +151,8 @@ def detect_gradual_drift(cursor):
             f"(Temp: {temp}°C, Hum: {hum}%)"
         )
 
+# établit une connexion à la BDD
+
 def detect_anomalies():
     """Détection complète des anomalies"""
     try:
@@ -165,6 +176,7 @@ def detect_anomalies():
         logging.error("Erreur lors de la détection: %s", str(e), exc_info=True)
         raise
 
+# lance une boucle infinie, et vérifie en continu réussit pour l'hôte de la base.
 def main_loop():
     """Boucle principale avec gestion robuste des erreurs"""
     while True:

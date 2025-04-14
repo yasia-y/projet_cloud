@@ -17,7 +17,7 @@ TEMP_MIN = 10.0
 TEMP_MAX = 35.0
 HUM_MIN = 30.0
 HUM_MAX = 80.0
-
+# according to les données sur internet of course
 
 def wait_for_db():
     for attempt in range(10):
@@ -30,6 +30,7 @@ def wait_for_db():
             logging.warning("DNS échec (tentative %d), retry dans %ds", attempt + 1, wait_time)
             time.sleep(wait_time)
     return False
+# permet de faire une boucle de 10 tentatives et en cas d'échec de réessayer.
 
 
 def get_db_connection():
@@ -43,6 +44,8 @@ def get_db_connection():
             logging.warning("Échec DB (tentative %d), retry dans %ds...: %s", attempt + 1, wait_time, str(e))
             time.sleep(wait_time)
     raise Exception("Connexion à la base échouée après 5 tentatives")
+
+# endpoint /ingest permet de réceptionner, convertit et valide les données, génère des anomalies, enregistre les données dans la table "sensor_data".
 
 
 @app.post("/ingest")
@@ -111,9 +114,9 @@ async def ingest(request: Request):
         logging.error("Erreur non gérée : %s", str(e), exc_info=True)
         raise HTTPException(status_code=500, detail="Erreur serveur interne")
 
-# ... (contenu existant gardé tel quel)
 
-# Ajouter ces nouveaux endpoints avant le @app.get("/health")
+# execute une requête pour récupérer et retourner la liste des identifiants de plantes distincts stockées dans la base
+
 @app.get("/plants")
 def get_plants():
     try:
@@ -125,6 +128,7 @@ def get_plants():
         logging.error("Erreur récupération plantes : %s", str(e))
         raise HTTPException(status_code=500, detail="Erreur base de données")
 
+# prend en paramètre un identifiant de plante et retourne, pour cette plante, la liste des capteurs distincts (identifiant et version)
 @app.get("/sensors")
 def get_sensors(plant_id: int = Query(...)):
     try:
@@ -144,8 +148,8 @@ def get_sensors(plant_id: int = Query(...)):
         logging.error("Erreur récupération capteurs : %s", str(e))
         raise HTTPException(status_code=500, detail="Erreur base de données")
 
-# ... (le reste du fichier reste inchangé)
 
+# effectue un test pour vérifier si la connexion à la base est fonctionnelle et renvoie un indicateur de statut de la base
 
 @app.get("/health")
 async def health():
@@ -157,6 +161,7 @@ async def health():
     except Exception:
         return {"status": "OK", "database": "non connecté"}
 
+# permet de récuperer les données enregistrées pour une plante donnée, avec pour possibilité de filtrer parmi les capteurs et les dates.
 
 @app.get("/data")
 def get_data(

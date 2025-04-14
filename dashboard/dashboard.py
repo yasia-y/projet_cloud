@@ -5,7 +5,6 @@ from datetime import datetime, timedelta
 from fetch_api import get_plants, get_sensors, get_sensor_data
 from streamlit_autorefresh import st_autorefresh
 
-# Configuration de la page - DOIT ÊTRE LA PREMIÈRE COMMANDE
 st.set_page_config(
     page_title="Supervision Ferme Urbaine", 
     layout="wide",
@@ -135,8 +134,7 @@ def main():
                         height=500)
             st.plotly_chart(fig, use_container_width=True)
 
-        # Détails des anomalies (SECTION CORRIGÉE)
-        # Remplacer la section des anomalies par :
+      
         if anomaly_count > 0:
             st.subheader("🚨 Détail des Anomalies")
             anomalies_df = df[df["anomaly"]].sort_values("timestamp", ascending=False)

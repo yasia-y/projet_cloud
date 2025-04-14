@@ -2,6 +2,7 @@ version: '3.8'
 
 services:
   ingestion-api:
+    image: yasia/ingestion-api:latest
     build:
       context: ./ingestion-api
     ports:
@@ -11,7 +12,7 @@ services:
       - TZ=Europe/Paris
     depends_on:
       db:
-        condition: service_healthy
+        condition: service_healthy # attend que le service db soit "sain" avant de démarrer
     networks:
       - ferme-network
 
@@ -117,7 +118,7 @@ services:
     environment:
       - TZ=Europe/Paris
     depends_on:
-      - ingestion-api
+      - ingestion-api # dépendra du service ingestion-api pour garantir que les données soient disponibles.
     networks:
       - ferme-network
 

@@ -1,5 +1,7 @@
 import logging
 
+# permet juste de s'assurer que le dict de données reçu respecte certains critères de validité qu'on attend pour un enregistrement de capteur.
+
 def validate_sensor_payload(data: dict) -> (bool, list):
     errors = []
 
@@ -21,6 +23,8 @@ def validate_sensor_payload(data: dict) -> (bool, list):
 
     logging.info(f"Validation result: {len(errors) == 0}, errors: {errors}")
     return (len(errors) == 0, errors)
+
+# permet de convertir une valeur de mesure sous forme str en float.
 
 def convert_measurements(measure: str) -> float:
     try:
